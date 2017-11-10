@@ -1,0 +1,133 @@
+
+
+#include<stdio.h>
+#include<conio.h>
+
+int poly_enc(FILE *plain,FILE *cipher);
+int poly_dec(FILE *plain,FILE *cipher);
+void init_table();
+char lookup(char key,char ch);
+
+void main()
+{
+FILE *plain,*cipher,*dec;
+
+// clrscr();
+plain=fopen("txt.txt","r+b");
+cipher=fopen("cip.txt","w+b");
+dec=fopen("dec.txt","w+b");
+
+printf("\nEncryting....\n");
+poly_enc(plain,cipher);
+printf("\nDecrypting...\n");
+poly_dec(cipher,dec);
+fclose(plain);
+fclose(cipher);
+fclose(dec);
+printf("\nDone.");
+getch();
+}
+char table[26][26];
+
+void init_table()
+{
+int i,j,k,flag;
+
+for(i=0;i<26;i++)
+{
+flag=0;
+for(j=i,k=0;j<i || flag == 0;j++,k++)
+{
+if(j>=26)
+{
+j=0;
+flag=1;
+}
+table[i][k]=j+97;
+// printf("%c ",table[i][k]);
+}
+// printf("\n");
+}
+delay(100);
+}
+
+int poly_enc(FILE *src,FILE *dsn)
+{
+char key[20],ch;
+long fctr,fsize;
+int kctr,klen;
+
+init_table();
+
+printf("Enter the Key:");
+fflush(stdin);
+gets(key);
+
+fseek(src,0,2);
+fsize=ftell(src);
+fseek(src,0,0);
+
+klen=strlen(key);
+
+for(fctr=0,kctr=0;fctr<fsize;fctr++,kctr++)
+{
+if(kctr>=klen) kctr=0;
+ch=tolower(getc(src));
+if(isalpha(ch))
+{
+putc(table[key[kctr]-97][ch-97],dsn);
+printf("%c",table[key[kctr]-97][ch-97]);
+}
+else
+{
+putc(ch,dsn);
+printf("%c",ch);
+}
+}
+
+return 1;
+}
+
+int poly_dec(FILE *src,FILE *dsn)
+{
+char key[20],ch;
+long fctr,fsize;
+int kctr,klen;
+
+init_table();
+
+printf("Enter the Key:");
+fflush(stdin);
+gets(key);
+
+fseek(src,0,2);
+fsize=ftell(src);
+fseek(src,0,0);
+
+klen=strlen(key);
+
+for(fctr=0,kctr=0;fctr<fsize;fctr++,kctr++)
+{
+if(kctr>=klen) kctr=0;
+ch=tolower(getc(src));
+if(isalpha(ch))
+{
+putc(lookup(key[kctr]-97,ch-97),dsn);
+printf("%c",lookup(key[kctr]-97,ch-97));
+}
+else
+{
+putc(ch,dsn);
+printf("%c",ch);
+}
+}
+
+return 1;
+}
+
+char lookup(char key,char ch)
+{
+int i;
+for(i=0;table[i][key] != ch;i++);
+return(table[0][i-1]);
+}
